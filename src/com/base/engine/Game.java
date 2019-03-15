@@ -37,15 +37,23 @@ public class Game
 		shader = new Shader();
 		loader = new Loader();
 		
-		Vertex[] data = new Vertex[] { 
-				new Vertex(new Vector3f(-1f,-1f,0f)),
-				new Vertex(new Vector3f(0f,1f,0f)),
-				new Vertex(new Vector3f(1f,-1f,0f))
-				};
-        int[] indices = {
-        	0,1,2	
-        };
-		mesh.addVertices(data, indices);
+		//Vertex[] data = new Vertex[] {
+		//		new Vertex(new Vector3f(-1f,-1f,0f)),
+		//		new Vertex(new Vector3f(0f,1f,0f)),
+		//		new Vertex(new Vector3f(1f,-1f,0f)),
+		//		new Vertex(new Vector3f(0f,0f,1f)),
+		//				};
+        //int[] indices = new int[] {
+        //		0,1,3,
+        //		3,1,2,
+        //		2,1,0,
+        //		0,3,2
+        //};
+		//mesh.addVertices(data, indices);
+
+		mesh = ResourceLoader.loadMesh("box.obj");
+        
+
 		
 		transform = new Transform();
         		
@@ -80,8 +88,9 @@ public class Game
 		float sinTemp = (float)Math.sin(temp);
 		
 		transform.setTranslation(sinTemp, 0, 0);
-		transform.setRotation(0, 0, sinTemp * 180);
-		transform.setScale(sinTemp, sinTemp, sinTemp);
+		transform.setRotation(sinTemp * 270, sinTemp * 180, sinTemp * 150);
+		float sc = 0.5f * sinTemp;
+		transform.setScale(sc, sc, sc);
  	}
 	
 	public void render()
