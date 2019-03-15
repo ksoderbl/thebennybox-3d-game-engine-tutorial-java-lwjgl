@@ -42,8 +42,10 @@ public class Game
 				new Vertex(new Vector3f(0f,1f,0f)),
 				new Vertex(new Vector3f(1f,-1f,0f))
 				};
-
-		mesh.addVertices(loader, data);
+        int[] indices = {
+        	0,1,2	
+        };
+		mesh.addVertices(data, indices);
 		
 		transform = new Transform();
         		
@@ -52,9 +54,7 @@ public class Game
         shader.compileShader();
         shader.addUniform("transform");
         
-        //int[] indices = {
-        //	0,1,2	
-        //};
+
         
         //mesh = loader.loadToVAO(vertices, 3);
 	}
