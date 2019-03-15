@@ -42,6 +42,10 @@ public class Game
         shader.addVertexShader(ResourceLoader.loadShader(VERTEX_FILE));
         shader.addFragmentShader(ResourceLoader.loadShader(FRAGMENT_FILE));
         shader.compileShader();
+        shader.addUniform("uniformFloat");
+        
+
+        
         //int[] indices = {
         //	0,1,2	
         //};
@@ -66,8 +70,13 @@ public class Game
 			System.out.println("We've just released right mouse button!");
 	}
 	
+	float temp = 0.0f;
+	
 	public void update()
 	{
+		temp += Time.getDelta();
+		
+		shader.setUniformf("uniformFloat", (float)Math.abs(Math.sin(temp))); 
 	}
 	
 	public void render()
@@ -76,7 +85,8 @@ public class Game
 
        	mesh.draw();
        	
-       	shader.stop();
+       	//shader.stop(); // For #11 3D Game Engine Tutorial: Uniforms, shaders has to be in use to set uniform variables
+
        	//Window.render();
 	}
 	

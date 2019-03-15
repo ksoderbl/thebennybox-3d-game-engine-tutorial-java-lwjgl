@@ -7,49 +7,33 @@ import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL31;
 import org.lwjgl.opengl.GL32;
 import org.lwjgl.opengl.GL33;
-import org.lwjgl.util.vector.Matrix4f;
-import org.lwjgl.util.vector.Vector2f;
-import org.lwjgl.util.vector.Vector3f;
-import org.lwjgl.util.vector.Vector4f;
+
+//import org.lwjgl.util.vector.Matrix4f;
+//import org.lwjgl.util.vector.Vector2f;
+//import org.lwjgl.util.vector.Vector3f;
+//import org.lwjgl.util.vector.Vector4f;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.FloatBuffer;
+import java.util.HashMap;
 
 public class Shader
 {
     private int program;
+    private HashMap<String, Integer> uniforms;
+    
     private int vertexShaderID;
     private int fragmentShaderID;
     
-	/*
-	private int program;
-	
-	public Shader()
-	{
-		program = glCreateProgram();
-		
-		if (program == 0)
-		{
-			System.err.println("Shader program creation failed");
-			System.exit(1);
-		}
-	}
-	
-	public void bind()
-	{
-		glUseProgram(program);
-	}
-
-	*/
-
     private static FloatBuffer matrixBuffer = BufferUtils.createFloatBuffer(16);
 
     public Shader()
     {
     	program = GL20.glCreateProgram();
+    	uniforms = new HashMap<String, Integer>();
     }
     
     public Shader(String vertexFile, String fragmentFile)
@@ -64,6 +48,45 @@ public class Shader
         GL20.glValidateProgram(program);
         getAllUniformLocations();
     }
+    
+    // same as getUniformLocation
+    public void addUniform(String uniform)
+    {
+    	int uniformLocation = GL20.glGetUniformLocation(program, uniform);
+    	
+    	System.out.println("addUniform, program: " + program);
+    	System.out.println("addUniform, uniform: " + uniform);
+    	System.out.println("addUniform, got location: " + uniformLocation);
+    	
+    	if (uniformLocation < 0) {
+    		System.err.println("Error: Could not get uniform location: " + uniform);
+    		new Exception().printStackTrace();
+    		System.exit(1);
+    	}
+    	
+    	uniforms.put(uniform, uniformLocation);
+    }
+    
+    public void setUniformi(String uniformName, int value)
+    {
+    	GL20.glUniform1i(uniforms.get(uniformName), value);
+    }
+    
+    public void setUniformf(String uniformName, float value)
+    {
+    	GL20.glUniform1f(uniforms.get(uniformName), value);
+    }
+    
+    public void setUniform(String uniformName, Vector3f value)
+    {
+    	GL20.glUniform3f(uniforms.get(uniformName), value.getX(), value.getY(), value.getZ());
+    }
+
+    public void setUniform(String uniformName, Matrix4f value)
+    {
+    	GL20.glUniformMatrix4(uniforms.get(uniformName), true, Util.createFlippedBuffer(value));
+    }
+    
     
 	public void addVertexShader(String text)
 	{
@@ -162,15 +185,15 @@ public class Shader
         GL20.glUniform1i(location, value);
     }
 
-    protected void load2DVector(int location, Vector2f vector) {
+    protected void load2DVector(int location, org.lwjgl.util.vector.Vector2f vector) {
         GL20.glUniform2f(location, vector.x, vector.y);
     }
 
-    protected void loadVector(int location, Vector3f vector) {
+    protected void loadVector(int location, org.lwjgl.util.vector.Vector3f vector) {
         GL20.glUniform3f(location, vector.x, vector.y, vector.z);
     }
 
-    protected void loadVector(int location, Vector4f vector) {
+    protected void loadVector(int location, org.lwjgl.util.vector.Vector4f vector) {
         GL20.glUniform4f(location, vector.x, vector.y, vector.z, vector.w);
     }
 
@@ -182,7 +205,7 @@ public class Shader
         GL20.glUniform1f(location, toLoad);
     }
 
-    protected void loadMatrix(int location, Matrix4f matrix) {
+    protected void loadMatrix(int location, org.lwjgl.util.vector.Matrix4f matrix) {
         matrix.store(matrixBuffer);
         matrixBuffer.flip();
         GL20.glUniformMatrix4(location, false, matrixBuffer);
