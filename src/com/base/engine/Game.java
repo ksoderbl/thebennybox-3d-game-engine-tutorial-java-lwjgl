@@ -52,18 +52,15 @@ public class Game
 		//mesh.addVertices(data, indices);
 
 		mesh = ResourceLoader.loadMesh("box.obj");
-        
 
-		
 		transform = new Transform();
+		transform.setProjection(70, Window.getWidth(), Window.getHeight(), 0.1f, 1000);
         		
         shader.addVertexShader(ResourceLoader.loadShader(VERTEX_FILE));
         shader.addFragmentShader(ResourceLoader.loadShader(FRAGMENT_FILE));
         shader.compileShader();
         shader.addUniform("transform");
-        
 
-        
         //mesh = loader.loadToVAO(vertices, 3);
 	}
 	
@@ -87,16 +84,16 @@ public class Game
 		
 		float sinTemp = (float)Math.sin(temp);
 		
-		transform.setTranslation(sinTemp, 0, 0);
-		transform.setRotation(sinTemp * 270, sinTemp * 180, sinTemp * 150);
-		float sc = 0.5f * sinTemp;
-		transform.setScale(sc, sc, sc);
+		transform.setTranslation(sinTemp, 0, 5);
+		transform.setRotation(0, sinTemp * 180, 0);
+		//float sc = 0.5f * sinTemp;
+		//transform.setScale(sc, sc, sc);
  	}
 	
 	public void render()
 	{
        	shader.bind();
-		shader.setUniform("transform", transform.getTransformation());
+		shader.setUniform("transform", transform.getProjectedTransformation());
 
        	mesh.draw();
        	
