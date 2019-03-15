@@ -31,6 +31,42 @@ public class Matrix4f
 		return this;
 	}
 
+	public Matrix4f initRotation(float x, float y, float z)
+	{
+		Matrix4f rx = new Matrix4f();
+		Matrix4f ry = new Matrix4f();
+		Matrix4f rz = new Matrix4f();
+		
+		x = (float)Math.toRadians(x);
+		y = (float)Math.toRadians(y);
+		z = (float)Math.toRadians(z);
+		
+		float cx = (float)Math.cos(x);
+		float sx = (float)Math.sin(x);
+		float cy = (float)Math.cos(y);
+		float sy = (float)Math.sin(y);
+		float cz = (float)Math.cos(z);
+		float sz = (float)Math.sin(z);
+		
+		rz.m[0][0] = cz;  rz.m[0][1] = -sz; rz.m[0][2] = 0;   rz.m[0][3] = 0; 
+		rz.m[1][0] = sz;  rz.m[1][1] = cz;  rz.m[1][2] = 0;   rz.m[1][3] = 0;
+		rz.m[2][0] = 0;   rz.m[2][1] = 0;   rz.m[2][2] = 1;   rz.m[2][3] = 0;
+		rz.m[3][0] = 0;   rz.m[3][1] = 0;   rz.m[3][2] = 0;   rz.m[3][3] = 1;
+		
+		rx.m[0][0] = 1;   rx.m[0][1] = 0;   rx.m[0][2] = 0;   rx.m[0][3] = 0; 
+		rx.m[1][0] = 0;   rx.m[1][1] = cx;  rx.m[1][2] = -sx; rx.m[1][3] = 0;
+		rx.m[2][0] = 0;   rx.m[2][1] = sx;  rx.m[2][2] = cx;  rx.m[2][3] = 0;
+		rx.m[3][0] = 0;   rx.m[3][1] = 0;   rx.m[3][2] = 0;   rx.m[3][3] = 1;
+		
+		ry.m[0][0] = cy;  ry.m[0][1] = 0;   ry.m[0][2] = -sy; ry.m[0][3] = 0; 
+		ry.m[1][0] = 0;   ry.m[1][1] = 1;   ry.m[1][2] = 0;   ry.m[1][3] = 0;
+		ry.m[2][0] = sy;  ry.m[2][1] = 0;   ry.m[2][2] = cy;  ry.m[2][3] = 0;
+		ry.m[3][0] = 0;   ry.m[3][1] = 0;   ry.m[3][2] = 0;   ry.m[3][3] = 1;
+						
+		m = rx.mul(ry.mul(rz)).getM();
+		
+		return this;
+	}
 	
 	
 	public Matrix4f mul(Matrix4f r)

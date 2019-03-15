@@ -78,7 +78,7 @@ public class Game
 		temp += Time.getDelta();
 		
 		transform.setTranslation((float)Math.sin(temp), 0, 0);
-		
+		transform.setRotation(0, 0, (float)Math.sin(temp) * 360);
  
 	}
 	
