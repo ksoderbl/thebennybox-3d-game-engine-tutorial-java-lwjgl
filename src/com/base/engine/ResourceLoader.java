@@ -39,7 +39,7 @@ public class ResourceLoader
 		String[] splitArray = fileName.split("\\.");
 		String ext = splitArray[splitArray.length - 1];
 
-		System.out.println("ext = " + ext);
+		//System.out.println("ext = " + ext);
 
 		if (!ext.equals("obj"))
 		{
@@ -73,9 +73,16 @@ public class ResourceLoader
 				}
 				else if (tokens[0].equals("f"))
 				{
-					indices.add(Integer.parseInt(tokens[1]) - 1);
-					indices.add(Integer.parseInt(tokens[2]) - 1);
-					indices.add(Integer.parseInt(tokens[3]) - 1);
+					indices.add(Integer.parseInt(tokens[1].split("/")[0]) - 1);
+					indices.add(Integer.parseInt(tokens[2].split("/")[0]) - 1);
+					indices.add(Integer.parseInt(tokens[3].split("/")[0]) - 1);
+
+					// handle quadrilateral
+					if (tokens.length > 4) {
+						indices.add(Integer.parseInt(tokens[1].split("/")[0]) - 1);
+						indices.add(Integer.parseInt(tokens[3].split("/")[0]) - 1);
+						indices.add(Integer.parseInt(tokens[4].split("/")[0]) - 1);
+					}
 				}
 			}
 

@@ -21,15 +21,6 @@ public class Matrix4f
 	//	return this;
 	//}
 
-	public Matrix4f initIdentity()
-	{
-		m[0][0] = 1;  m[0][1] = 0;  m[0][2] = 0;  m[0][3] = 0;
-		m[1][0] = 0;  m[1][1] = 1;  m[1][2] = 0;  m[1][3] = 0;
-		m[2][0] = 0;  m[2][1] = 0;  m[2][2] = 1;  m[2][3] = 0;
-		m[3][0] = 0;  m[3][1] = 0;  m[3][2] = 0;  m[3][3] = 1;
-
-		return this;
-	}
 
 	public Matrix4f initTranslation(float x, float y, float z)
 	{
@@ -98,6 +89,25 @@ public class Matrix4f
 		m[1][0] = 0;                          m[1][1] = 1.0f / tanHalfFOV;  m[1][2] = 0;                       m[1][3] = 0;
 		m[2][0] = 0;                          m[2][1] = 0;                  m[2][2] = (-zNear - zFar)/zRange;  m[2][3] = 2 * zFar * zNear / zRange;
 		m[3][0] = 0;                          m[3][1] = 0;                  m[3][2] = 1;                       m[3][3] = 0;
+
+		return this;
+	}
+
+	public Matrix4f initCamera(Vector3f forward, Vector3f up)
+	{
+		Vector3f f = forward;
+		f.normalize();
+
+		Vector3f r = up;
+		r.normalize();
+		r = r.cross(f);
+
+		Vector3f u = f.cross(r);
+
+		m[0][0] = r.getX();  m[0][1] = r.getY();  m[0][2] = r.getZ();  m[0][3] = 0;
+		m[1][0] = u.getX();  m[1][1] = u.getY();  m[1][2] = u.getZ();  m[1][3] = 0;
+		m[2][0] = f.getX();  m[2][1] = f.getY();  m[2][2] = f.getZ();  m[2][3] = 0;
+		m[3][0] = 0;         m[3][1] = 0;         m[3][2] = 0;         m[3][3] = 1;
 
 		return this;
 	}

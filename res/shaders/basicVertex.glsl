@@ -1,9 +1,13 @@
-#version 330
+//#version 330
+#version 120
 
-layout (location = 0) in vec3 position;
+//layout (location = 0) in vec3 position;
+attribute vec3 position;
 
-out vec4 color;
+//out vec4 color;
+varying vec4 color;
 
+//uniform mat4 transform;
 uniform mat4 transform;
 
 void main(void)

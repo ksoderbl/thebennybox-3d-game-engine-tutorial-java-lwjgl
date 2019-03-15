@@ -20,9 +20,10 @@ public class Game
 	private static final String FRAGMENT_FILE = "basicFragment";
 	
 	private Mesh mesh;
-	private Loader loader;
+	//private Loader loader;
 	private Shader shader;
 	private Transform transform;
+	private Camera camera;
 	
 	float[] vertices = {
 	      	-1f,-1f,0f,
@@ -35,7 +36,8 @@ public class Game
 	{
 		mesh = new Mesh();
 		shader = new Shader();
-		loader = new Loader();
+		//loader = new Loader();
+		camera = new Camera();
 		
 		//Vertex[] data = new Vertex[] {
 		//		new Vertex(new Vector3f(-1f,-1f,0f)),
@@ -54,6 +56,7 @@ public class Game
 		mesh = ResourceLoader.loadMesh("box.obj");
 
 		transform = new Transform();
+		Transform.setCamera(camera);
 		transform.setProjection(70, Window.getWidth(), Window.getHeight(), 0.1f, 1000);
         		
         shader.addVertexShader(ResourceLoader.loadShader(VERTEX_FILE));
@@ -66,14 +69,15 @@ public class Game
 	
 	public void input()
 	{
-		if (Input.getKeyDown(Keyboard.KEY_UP))
-			System.out.println("We've just pressed up!");
-		if (Input.getKeyUp(Keyboard.KEY_UP))
-			System.out.println("We've just released up!");
-		if (Input.getMouseDown(1))
-			System.out.println("We've just right clicked at " + Input.getMousePosition());
-		if (Input.getMouseUp(1))
-			System.out.println("We've just released right mouse button!");
+		camera.input();
+		//if (Input.getKeyDown(Keyboard.KEY_UP))
+		//	System.out.println("We've just pressed up!");
+		//if (Input.getKeyUp(Keyboard.KEY_UP))
+		//	System.out.println("We've just released up!");
+		//if (Input.getMouseDown(1))
+		//	System.out.println("We've just right clicked at " + Input.getMousePosition());
+		//if (Input.getMouseUp(1))
+		//	System.out.println("We've just released right mouse button!");
 	}
 	
 	float temp = 0.0f;
@@ -86,8 +90,8 @@ public class Game
 		
 		transform.setTranslation(sinTemp, 0, 5);
 		transform.setRotation(0, sinTemp * 180, 0);
-		//float sc = 0.5f * sinTemp;
-		//transform.setScale(sc, sc, sc);
+		float sc = 1.0f;
+		transform.setScale(sc, sc, sc);
  	}
 	
 	public void render()
@@ -105,7 +109,7 @@ public class Game
 	public void cleanUp()
 	{
         shader.cleanUp();
-        loader.cleanUp();
+		//loader.cleanUp();
         Window.dispose();
 	}
 }
