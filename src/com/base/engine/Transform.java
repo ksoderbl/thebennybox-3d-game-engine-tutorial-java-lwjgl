@@ -2,13 +2,12 @@ package com.base.engine;
 
 public class Transform
 {
-	private Vector3f translation;
-	private Vector3f rotation;
+	private Vector3f translation = new Vector3f(0, 0, 0);
+	private Vector3f rotation = new Vector3f(0, 0, 0);
+	private Vector3f scale = new Vector3f(1, 1, 1);
 	
 	public Transform()
 	{
-		translation = new Vector3f(0, 0, 0);
-		rotation = new Vector3f(0, 0, 0);
 	}
 
 	public Matrix4f getTransformation()
@@ -21,8 +20,12 @@ public class Transform
 				rotation.getX(),
 				rotation.getY(),
 				rotation.getZ());
+		Matrix4f scaleMatrix = new Matrix4f().initScale(
+				scale.getX(),
+				scale.getY(),
+				scale.getZ());
 		
-		return translationMatrix.mul(rotationMatrix);
+		return translationMatrix.mul(rotationMatrix.mul(scaleMatrix));
 	}
 
 	public Vector3f getTranslation()
@@ -54,4 +57,20 @@ public class Transform
 	{
 		this.rotation = new Vector3f(x, y, z);
 	}
+
+	public Vector3f getScale()
+	{
+		return scale;
+	}
+
+	public void setScale(Vector3f scale)
+	{
+		this.scale = scale;
+	}
+	
+	public void setScale(float x, float y, float z)
+	{
+		this.scale = new Vector3f(x, y, z);
+	}
+	
 }
