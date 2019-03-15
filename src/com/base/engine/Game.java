@@ -22,6 +22,8 @@ public class Game
 	private Mesh mesh;
 	private Loader loader;
 	private Shader shader;
+	private Transform transform;
+	
 	float[] vertices = {
 	      	-1f,-1f,0f,
         	1f,-1f,0f,
@@ -31,31 +33,30 @@ public class Game
 	
 	public Game()
 	{
+		mesh = new Mesh();
+		shader = new Shader();
+		loader = new Loader();
+		
 		Vertex[] data = new Vertex[] { 
 				new Vertex(new Vector3f(-1f,-1f,0f)),
 				new Vertex(new Vector3f(0f,1f,0f)),
 				new Vertex(new Vector3f(1f,-1f,0f))
 				};
 
-		loader = new Loader();
-        shader = new Shader();
+		mesh.addVertices(loader, data);
+		
+		transform = new Transform();
+        		
         shader.addVertexShader(ResourceLoader.loadShader(VERTEX_FILE));
         shader.addFragmentShader(ResourceLoader.loadShader(FRAGMENT_FILE));
         shader.compileShader();
-        shader.addUniform("uniformFloat");
-        
-
+        shader.addUniform("transform");
         
         //int[] indices = {
         //	0,1,2	
         //};
         
         //mesh = loader.loadToVAO(vertices, 3);
-
-		mesh = new Mesh();
-		
-		mesh.addVertices(loader, data);
-
 	}
 	
 	public void input()
@@ -76,12 +77,15 @@ public class Game
 	{
 		temp += Time.getDelta();
 		
-		shader.setUniformf("uniformFloat", (float)Math.abs(Math.sin(temp))); 
+		transform.setTranslation((float)Math.sin(temp), 0, 0);
+		
+ 
 	}
 	
 	public void render()
 	{
        	shader.bind();
+		shader.setUniform("transform", transform.getTransformation());
 
        	mesh.draw();
        	
