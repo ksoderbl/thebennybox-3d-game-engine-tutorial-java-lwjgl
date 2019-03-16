@@ -62,22 +62,35 @@ public class Mesh
     {
         GL30.glBindVertexArray(0);
     }
-    
-    // not efficient, but compatible with bennybox ideas
-    public void addVertices(Vertex[] data, int[] indices)
+
+    public void addVertices(Vertex[] vertices, int[] indices)
     {
-    	float[] vertices = new float[data.length * Vertex.POS_SIZE];
-        float[] textureCoords = new float[data.length * Vertex.TEXCOORD_SIZE];
+        addVertices(vertices, indices, false);
+    }
+
+    public void addVertices(Vertex[] vertices, int[] indices, boolean calcNormals)
+    {
+        if (calcNormals) {
+            calcNormals(vertices, indices);
+        }
+
+    	float[] verticesArray = new float[vertices.length * Vertex.POS_SIZE];
+        float[] textureCoords = new float[vertices.length * Vertex.TEXCOORD_SIZE];
+        float[] normalsArray = new float[vertices.length * Vertex.NORMAL_SIZE];
     	
     	int j = 0;
     	int k = 0;
-    	for (int i = 0; i < data.length; i++) {
-    		Vertex v = data[i];
-    		vertices[j++] = v.getPos().getX();
-    		vertices[j++] = v.getPos().getY();
-    		vertices[j++] = v.getPos().getZ();
+    	int l = 0;
+    	for (int i = 0; i < vertices.length; i++) {
+    		Vertex v = vertices[i];
+    		verticesArray[j++] = v.getPos().getX();
+    		verticesArray[j++] = v.getPos().getY();
+    		verticesArray[j++] = v.getPos().getZ();
     		textureCoords[k++] = v.getTexCoord().getX();
             textureCoords[k++] = v.getTexCoord().getY();
+            normalsArray[l++] = v.getNormal().getX();
+            normalsArray[l++] = v.getNormal().getY();
+            normalsArray[l++] = v.getNormal().getZ();
     	}
 
 
@@ -86,14 +99,15 @@ public class Mesh
         loader.storeDataInAttributeList(0, Vertex.SIZE, vertices);
         loader.unbindVAO();
     	this.vaoID = vaoID;
-    	this.vertexCount = data.length;
+    	this.vertexCount = vertices.length;
     	*/
     	
     	//Mesh otherMesh = loader.loadToVAO(vertices, indices);
         int vaoID = createVAO();
         bindIndicesBuffer(indices);
-        storeDataInAttributeList(0, 3, vertices);
-        storeDataInAttributeList(1, 2, textureCoords);
+        storeDataInAttributeList(0, Vertex.POS_SIZE, verticesArray);
+        storeDataInAttributeList(1, Vertex.TEXCOORD_SIZE, textureCoords);
+        storeDataInAttributeList(2, Vertex.NORMAL_SIZE, normalsArray);
         unbindVAO();
     	
     	this.vaoID = vaoID;
@@ -105,6 +119,7 @@ public class Mesh
 		GL30.glBindVertexArray(getVaoID());
 		GL20.glEnableVertexAttribArray(0);
         GL20.glEnableVertexAttribArray(1); // textureCoords
+        GL20.glEnableVertexAttribArray(2); // normals
         GL13.glActiveTexture(GL13.GL_TEXTURE0);
         //GL11.glBindTexture(GL11.GL_TEXTURE_2D, .getID());
 		//if using indices
@@ -114,6 +129,31 @@ public class Mesh
 		
 		GL20.glDisableVertexAttribArray(0);
         GL20.glDisableVertexAttribArray(1);
+        GL20.glDisableVertexAttribArray(2);
 		GL30.glBindVertexArray(0);
+    }
+
+    private void calcNormals(Vertex[] vertices, int[] indices)
+    {
+        for (int i = 0; i < indices.length; i += 3)
+        {
+            int i0 = indices[i];
+            int i1 = indices[i + 1];
+            int i2 = indices[i + 2];
+
+            Vector3f v1 = vertices[i1].getPos().sub( vertices[i0].getPos() );
+            Vector3f v2 = vertices[i2].getPos().sub( vertices[i0].getPos() );
+
+            Vector3f normal = v1.cross(v2).normalized();
+
+            vertices[i0].setNormal(vertices[i0].getNormal().add(normal));
+            vertices[i1].setNormal(vertices[i1].getNormal().add(normal));
+            vertices[i2].setNormal(vertices[i2].getNormal().add(normal));
+        }
+
+        for (int i = 0; i < vertices.length; i++)
+        {
+            vertices[i].setNormal(vertices[i].getNormal().normalized());
+        }
     }
 }
