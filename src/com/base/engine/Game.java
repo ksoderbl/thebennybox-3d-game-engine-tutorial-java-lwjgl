@@ -25,12 +25,14 @@ public class Game
 	PointLight pLight1 = new PointLight(
 			new BaseLight( new Vector3f(1,0.5f,0), 0.8f ),
 			new Attenuation(0, 0, 1 ),
-			new Vector3f(-2, 0, 5	)
+			new Vector3f(-2, 0, 5	),
+			10
 	);
 	PointLight pLight2 = new PointLight(
 			new BaseLight( new Vector3f(0,0.5f,1), 0.8f ),
 			new Attenuation(0, 0, 1 ),
-			new Vector3f(2, 0, 7	)
+			new Vector3f(2, 0, 7	),
+			10
 	);
 	
 
