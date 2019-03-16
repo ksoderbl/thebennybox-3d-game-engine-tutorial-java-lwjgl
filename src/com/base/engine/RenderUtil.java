@@ -12,6 +12,16 @@ public class RenderUtil
 		//TODO: Stencil Buffer
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
+
+	public static void setTextures(boolean enabled)
+	{
+		if (enabled) {
+			GL11.glEnable(GL11.GL_TEXTURE_2D);
+		}
+		else {
+			GL11.glDisable(GL11.GL_TEXTURE_2D);
+		}
+	}
 	
 	public static void initGraphics()
 	{
@@ -23,7 +33,8 @@ public class RenderUtil
 		glEnable(GL_DEPTH_TEST);
 		
 		//TODO: Depth clamp for later
-		
+
+		glEnable(GL_TEXTURE_2D);
 		//gamma correction
 		//https://www.youtube.com/watch?v=fkM9vx6ZDdU&list=PLEETnX-uPtBXP_B2yupUKlflXBznWIlL5&index=8
 		glEnable(GL_FRAMEBUFFER_SRGB);

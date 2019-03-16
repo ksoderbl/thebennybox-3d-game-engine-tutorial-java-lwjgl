@@ -3,21 +3,21 @@ package com.base.engine;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL15;
-import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengl.*;
 
-public class Mesh {
+public class Mesh
+{
     private int vaoID;
     private int vertexCount;
     
-    public Mesh() {
+    public Mesh()
+    {
         this.vaoID = 0;
         this.vertexCount = 0;
   	}
 
-    public Mesh(int vaoID, int vertexCount) {
+    public Mesh(int vaoID, int vertexCount)
+    {
         this.vaoID = vaoID;
         this.vertexCount = vertexCount;
     }
@@ -66,15 +66,21 @@ public class Mesh {
     // not efficient, but compatible with bennybox ideas
     public void addVertices(Vertex[] data, int[] indices)
     {
-    	float[] vertices = new float[data.length * Vertex.SIZE];
+    	float[] vertices = new float[data.length * Vertex.POS_SIZE];
+        float[] textureCoords = new float[data.length * Vertex.TEXCOORD_SIZE];
     	
     	int j = 0;
+    	int k = 0;
     	for (int i = 0; i < data.length; i++) {
     		Vertex v = data[i];
     		vertices[j++] = v.getPos().getX();
     		vertices[j++] = v.getPos().getY();
     		vertices[j++] = v.getPos().getZ();
+    		textureCoords[k++] = v.getTexCoord().getX();
+            textureCoords[k++] = v.getTexCoord().getY();
     	}
+
+
     	/*
         int vaoID = loader.createVAO();
         loader.storeDataInAttributeList(0, Vertex.SIZE, vertices);
@@ -84,10 +90,10 @@ public class Mesh {
     	*/
     	
     	//Mesh otherMesh = loader.loadToVAO(vertices, indices);
-    	
         int vaoID = createVAO();
         bindIndicesBuffer(indices);
         storeDataInAttributeList(0, 3, vertices);
+        storeDataInAttributeList(1, 2, textureCoords);
         unbindVAO();
     	
     	this.vaoID = vaoID;
@@ -98,12 +104,16 @@ public class Mesh {
     {
 		GL30.glBindVertexArray(getVaoID());
 		GL20.glEnableVertexAttribArray(0);
+        GL20.glEnableVertexAttribArray(1); // textureCoords
+        GL13.glActiveTexture(GL13.GL_TEXTURE0);
+        //GL11.glBindTexture(GL11.GL_TEXTURE_2D, .getID());
 		//if using indices
 		GL11.glDrawElements(GL11.GL_TRIANGLES, getVertexCount(), GL11.GL_UNSIGNED_INT, 0);
 		//using only vertices
 		//GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, getVertexCount());
 		
 		GL20.glDisableVertexAttribArray(0);
+        GL20.glDisableVertexAttribArray(1);
 		GL30.glBindVertexArray(0);
     }
 }

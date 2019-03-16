@@ -23,6 +23,7 @@ public class Game
 	//private Loader loader;
 	private Shader shader;
 	private Transform transform;
+	private Texture texture;
 	private Camera camera;
 	
 	float[] vertices = {
@@ -35,10 +36,25 @@ public class Game
 	public Game()
 	{
 		mesh = new Mesh();
+		texture = ResourceLoader.loadTexture("test.png");
 		shader = new Shader();
 		//loader = new Loader();
 		camera = new Camera();
-		
+
+		Vertex[] data = new Vertex[] {
+				new Vertex(new Vector3f(-1f,-1f,0f), new Vector2f(0f,0f)),
+				new Vertex(new Vector3f(0f,1f,0f), new Vector2f(0f,1f)),
+				new Vertex(new Vector3f(1f,-1f,0f), new Vector2f(1.0f,1f)),
+				new Vertex(new Vector3f(0f,-1f,1f), new Vector2f(1f,0f))
+						};
+		int[] indices = new int[] {
+				3,1,0,
+				2,1,3,
+				0,1,2,
+				0,2,3
+		};
+		mesh.addVertices(data, indices);
+
 		//Vertex[] data = new Vertex[] {
 		//		new Vertex(new Vector3f(-1f,-1f,0f)),
 		//		new Vertex(new Vector3f(0f,1f,0f)),
@@ -53,7 +69,7 @@ public class Game
         //};
 		//mesh.addVertices(data, indices);
 
-		mesh = ResourceLoader.loadMesh("box.obj");
+		//mesh = ResourceLoader.loadMesh("box.obj");
 
 		transform = new Transform();
 		Transform.setCamera(camera);
@@ -98,7 +114,7 @@ public class Game
 	{
        	shader.bind();
 		shader.setUniform("transform", transform.getProjectedTransformation());
-
+		texture.bind();
        	mesh.draw();
        	
        	//shader.stop(); // For #11 3D Game Engine Tutorial: Uniforms, shaders has to be in use to set uniform variables
