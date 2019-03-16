@@ -12,7 +12,7 @@ import org.lwjgl.opengl.GL30;
 //import org.lwjgl.util.vector.Vector2f;
 //import org.lwjgl.util.vector.Vector3f;
 //import org.lwjgl.util.vector.Vector4f;
-//import com.base.engine.Vector3f;
+import com.base.engine.Vector3f;
 
 public class Game
 {
@@ -32,10 +32,10 @@ public class Game
 	public Game()
 	{
 		mesh = new Mesh();
-		material = new Material( ResourceLoader.loadTexture("test.png"), new Vector3f(0,1,1));
-		//material = new Material( null, new Vector3f(0,1,1));
-		shader = new BasicShader();
+		material = new Material( ResourceLoader.loadTexture("test.png"), new Vector3f(1,1,1));
+		shader = PhongShader.getInstance();
 		camera = new Camera();
+		transform = new Transform();
 
 		Vertex[] data = new Vertex[] {
 				new Vertex(new Vector3f(-1f,-1f,0f), new Vector2f(0f,0f)),
@@ -67,11 +67,10 @@ public class Game
 
 		//mesh = ResourceLoader.loadMesh("box.obj");
 
-		transform = new Transform();
 		Transform.setCamera(camera);
 		transform.setProjection(70, Window.getWidth(), Window.getHeight(), 0.1f, 1000);
-        		
-         //mesh = loader.loadToVAO(vertices, 3);
+
+		PhongShader.setAmbientLight(new Vector3f(0.2f, 0.2f, 0.2f));
 	}
 	
 	public void input()
