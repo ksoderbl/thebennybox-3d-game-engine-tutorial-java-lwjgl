@@ -25,7 +25,7 @@ public class Camera
 
     public void input()
     {
-        float sensitivity = 0.5f;
+        float sensitivity = 0.1f;
         float movAmt = (float)(10 * Time.getDelta());
         //float rotAmt = (float)(100 * Time.getDelta());
 
