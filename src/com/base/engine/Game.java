@@ -34,7 +34,13 @@ public class Game
 			new Vector3f(2, 0, 7	),
 			10
 	);
-	
+
+	SpotLight sLight1 = new SpotLight(new PointLight(
+			new BaseLight( new Vector3f(1,1,1), 1.0f ),
+			new Attenuation(0, 0, 0.1f ),
+			new Vector3f(-2, 0, 5	),
+			10),
+			new Vector3f(1,1,1), 0.7f);
 
 	public Game()
 	{
@@ -102,14 +108,16 @@ public class Game
 		Transform.setCamera(camera);
 
 		PhongShader.setAmbientLight(new Vector3f(0.2f, 0.2f, 0.2f));
-		PhongShader.setDirectionalLight(
-				new DirectionalLight(
-					new BaseLight(new Vector3f(1,1,1), 0.3f),
-					new Vector3f(1f, 1f, 1f)));
+		//PhongShader.setDirectionalLight(
+		//		new DirectionalLight(
+		//			new BaseLight(new Vector3f(1,1,1), 0.3f),
+		//			new Vector3f(1f, 1f, 1f)));
 
 
 
-		PhongShader.setPointLight(new PointLight[]{pLight1, pLight2});
+		//PhongShader.setPointLights(new PointLight[]{pLight1, pLight2});
+		PhongShader.setSpotLights(new SpotLight[]{sLight1});
+
 	}
 	
 	public void input()
@@ -141,6 +149,9 @@ public class Game
 		//transform.setRotation(0, sinTemp * 180, 0);
 		//float sc = 1.0f;
 		//transform.setScale(sc, sc, sc);
+
+		sLight1.getPointLight().setPosition(camera.getPos());
+		sLight1.setDirection(camera.getForward());
  	}
 	
 	public void render()
