@@ -15,7 +15,7 @@ public class MainComponent
 {
 	public static final int WIDTH = 1080;
 	public static final int HEIGHT = 720;
-	public static final String TITLE = "#26 3D Game Engine Tutorial: Specular Reflection";
+	public static final String TITLE = "#27 3D Game Engine Tutorial: Point Lights (Part 1)";
 	public static final double FRAME_CAP = 5000.0;
 	
 	private boolean isRunning;
