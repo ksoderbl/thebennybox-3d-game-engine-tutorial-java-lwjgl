@@ -96,9 +96,24 @@ public class Shader
     {
     	GL20.glUniformMatrix4(uniforms.get(uniformName), true, Util.createFlippedBuffer(value));
     }
-    
-    
-	public void addVertexShader(String text)
+
+    public void addVertexShaderFromFile(String text)
+    {
+        addProgram(loadShader(text), GL20.GL_VERTEX_SHADER);
+    }
+
+    public void addFragmentShaderFromFile(String text)
+    {
+        addProgram(loadShader(text), GL20.GL_FRAGMENT_SHADER);
+    }
+
+    public void addGeometryShaderFromFile(String text)
+    {
+        addProgram(loadShader(text), GL32.GL_GEOMETRY_SHADER);
+    }
+
+
+    public void addVertexShader(String text)
 	{
 		addProgram(text, GL20.GL_VERTEX_SHADER);
 	}
@@ -249,5 +264,34 @@ public class Shader
             System.exit(-1);
         }
         return shaderID;
+    }
+
+
+
+    private static String loadShader(String fileName)
+    {
+        StringBuilder shaderSource = new StringBuilder();
+        BufferedReader shaderReader = null;
+
+        try
+        {
+            //String wd = Paths.get(".").toAbsolutePath().normalize().toString();
+            //System.out.println("path = " +wd);
+            shaderReader = new BufferedReader(new FileReader("./res/shaders/" + fileName + ".glsl"));
+            String line;
+            while ((line = shaderReader.readLine()) != null)
+            {
+                shaderSource.append(line).append("\n");
+            }
+
+            shaderReader.close();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+        return shaderSource.toString();
     }
 }
