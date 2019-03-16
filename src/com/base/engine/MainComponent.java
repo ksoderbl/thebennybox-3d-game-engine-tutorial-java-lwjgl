@@ -15,7 +15,7 @@ public class MainComponent
 {
 	public static final int WIDTH = 1080;
 	public static final int HEIGHT = 720;
-	public static final String TITLE = "#21 3D Game Engine Tutorial: Texturing";
+	public static final String TITLE = "#22 3D Game Engine Tutorial: Finishing Rendering Mechanics";
 	public static final double FRAME_CAP = 5000.0;
 	
 	private boolean isRunning;

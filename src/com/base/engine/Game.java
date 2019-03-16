@@ -12,18 +12,14 @@ import org.lwjgl.opengl.GL30;
 //import org.lwjgl.util.vector.Vector2f;
 //import org.lwjgl.util.vector.Vector3f;
 //import org.lwjgl.util.vector.Vector4f;
-import com.base.engine.Vector3f;
+//import com.base.engine.Vector3f;
 
 public class Game
 {
-	private static final String VERTEX_FILE = "basicVertex";
-	private static final String FRAGMENT_FILE = "basicFragment";
-	
 	private Mesh mesh;
-	//private Loader loader;
 	private Shader shader;
 	private Transform transform;
-	private Texture texture;
+	private Material material;
 	private Camera camera;
 	
 	float[] vertices = {
@@ -36,9 +32,9 @@ public class Game
 	public Game()
 	{
 		mesh = new Mesh();
-		texture = ResourceLoader.loadTexture("test.png");
-		shader = new Shader();
-		//loader = new Loader();
+		material = new Material( ResourceLoader.loadTexture("test.png"), new Vector3f(0,1,1));
+		//material = new Material( null, new Vector3f(0,1,1));
+		shader = new BasicShader();
 		camera = new Camera();
 
 		Vertex[] data = new Vertex[] {
@@ -75,12 +71,7 @@ public class Game
 		Transform.setCamera(camera);
 		transform.setProjection(70, Window.getWidth(), Window.getHeight(), 0.1f, 1000);
         		
-        shader.addVertexShader(ResourceLoader.loadShader(VERTEX_FILE));
-        shader.addFragmentShader(ResourceLoader.loadShader(FRAGMENT_FILE));
-        shader.compileShader();
-        shader.addUniform("transform");
-
-        //mesh = loader.loadToVAO(vertices, 3);
+         //mesh = loader.loadToVAO(vertices, 3);
 	}
 	
 	public void input()
@@ -112,20 +103,16 @@ public class Game
 	
 	public void render()
 	{
-       	shader.bind();
-		shader.setUniform("transform", transform.getProjectedTransformation());
-		texture.bind();
+		RenderUtil.setClearColor(Transform.getCamera().getPos().div(2048f).abs());
+		shader.bind();
+		shader.updateUniforms(transform.getTransformation(), transform.getProjectedTransformation(), material);
        	mesh.draw();
        	
-       	//shader.stop(); // For #11 3D Game Engine Tutorial: Uniforms, shaders has to be in use to set uniform variables
-
        	//Window.render();
 	}
 	
 	public void cleanUp()
 	{
-        shader.cleanUp();
-		//loader.cleanUp();
         Window.dispose();
 	}
 }

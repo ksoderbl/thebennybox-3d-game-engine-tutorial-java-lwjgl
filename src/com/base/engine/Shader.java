@@ -48,7 +48,17 @@ public class Shader
         GL20.glValidateProgram(program);
         getAllUniformLocations();
     }
-    
+
+    public void bind()
+    {
+        GL20.glUseProgram(program);
+    }
+
+    public void updateUniforms(Matrix4f worldMatrix, Matrix4f projectedMatrix, Material material)
+    {
+
+    }
+
     // same as getUniformLocation
     public void addUniform(String uniform)
     {
@@ -151,9 +161,9 @@ public class Shader
         return GL20.glGetUniformLocation(program, uniformName);
     }
 
-    public void bind() {
-        GL20.glUseProgram(program);
-    }
+    //public void start() {
+    //        GL20.glUseProgram(program);
+    //}
 
     public void stop() {
         GL20.glUseProgram(0);

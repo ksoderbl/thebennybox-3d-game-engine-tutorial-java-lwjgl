@@ -4,7 +4,8 @@ public class Vector3f
 {
 	private float x, y, z;
 
-	public Vector3f(float x, float y, float z) {
+	public Vector3f(float x, float y, float z)
+	{
 		this.x = x;
 		this.y = y;
 		this.z = z;
@@ -29,13 +30,11 @@ public class Vector3f
 		return new Vector3f(xx, yy, zz);
 	}
 	
-	public Vector3f normalize()
+	public Vector3f normalized()
 	{
 		float length = length();
-		x /= length;
-		y /= length;
-		z /= length;
-		return this;
+
+		return new Vector3f(x / length,y / length,z / length);
 	}
 
 	public Vector3f rotate(float angle, Vector3f axis)
@@ -52,11 +51,7 @@ public class Vector3f
 		Quaternion conjugate = rotation.conjugate();
 		Quaternion w = rotation.mul(this).mul(conjugate);
 
-		x = w.getX();
-		y = w.getY();
-		z = w.getZ();
-
-		return this;
+		return new Vector3f(w.getX(), w.getY(), w.getZ());
 	}
 	
 	public Vector3f add(Vector3f r)
@@ -97,6 +92,11 @@ public class Vector3f
 	public Vector3f div(float r)
 	{
 		return new Vector3f(x / r, y / r, z / r);
+	}
+
+	public Vector3f abs()
+	{
+		return new Vector3f(Math.abs(x), Math.abs(y), Math.abs(z));
 	}
 	
 	public float getX() {
