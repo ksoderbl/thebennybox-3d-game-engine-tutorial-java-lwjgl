@@ -13,7 +13,8 @@ public class Camera
 
     public Camera()
     {
-        this(new Vector3f(0,0,0), new Vector3f(0,0,1), new Vector3f(0,1,0));
+        // tutorial31: was at 0, 0, 0
+        this(new Vector3f(0,1,0), new Vector3f(0,0,1), new Vector3f(0,1,0));
     }
 
     public Camera(Vector3f pos, Vector3f forward, Vector3f up)

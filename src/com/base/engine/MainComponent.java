@@ -15,7 +15,7 @@ public class MainComponent
 {
 	public static final int WIDTH = 1080;
 	public static final int HEIGHT = 720;
-	public static final String TITLE = "#3 Wolfenstein 3d Clone Tutorial: Setting up the renderer, #31 3D Game Engine Tutorial: Finishing the Lighting Segment";
+	public static final String TITLE = "#4 Wolfenstein 3D Clone Tutorial: Level Generation, #31 3D Game Engine Tutorial: Finishing the Lighting Segment";
 	public static final double FRAME_CAP = 5000.0;
 	
 	private boolean isRunning;

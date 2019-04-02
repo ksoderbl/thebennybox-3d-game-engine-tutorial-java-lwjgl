@@ -31,6 +31,37 @@ public class Bitmap
         }
     }
 
+    public Bitmap flipX()
+    {
+        int[] temp = new int[pixels.length];
+
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++) {
+                temp[i + j * width] = pixels[(width  - i - 1) + j * width];
+            }
+        }
+        pixels = temp;
+
+        return this;
+    }
+
+    public Bitmap flipY()
+    {
+        int[] temp = new int[pixels.length];
+
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++) {
+                temp[i + j * width] = pixels[i + (width  - j - 1) * width];
+            }
+        }
+        pixels = temp;
+
+        return this;
+    }
+
+
     public Bitmap(int width, int height)
     {
         this.width = width;
