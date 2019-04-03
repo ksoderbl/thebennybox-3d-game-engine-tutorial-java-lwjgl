@@ -78,7 +78,7 @@ public class Game
 			//}
 
 			shader = BasicShader.getInstance();
-			material = new Material(new Texture("test.png"), new Vector3f(1, 1, 1));
+			material = new Material(new Texture("wolf.png"), new Vector3f(1, 1, 1));
 
 			ArrayList<Vertex> vertices = new ArrayList<Vertex>();
 			ArrayList<Integer> indices = new ArrayList<Integer>();
