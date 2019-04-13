@@ -23,7 +23,7 @@ public class Game
 	private Level level;
 
 	// tutorial 31
-	private boolean tutorial31stuff = true;
+	private boolean tutorial31stuff = false;
 	private boolean wolfenstein3Dclone = !tutorial31stuff;
 
 	public Game()

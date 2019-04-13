@@ -22,10 +22,104 @@ public class Level
     public Level(String levelName, String textureName)
     {
         level = new Bitmap(levelName).flipY();
+        material = new Material(new Texture(textureName), new Vector3f(1, 1, 1));
+        transform = new Transform();
 
         shader = BasicShader.getInstance();
-        material = new Material(new Texture(textureName), new Vector3f(1, 1, 1));
 
+        generateLevel();
+    }
+
+    public void input()
+    {
+
+    }
+
+    public void update()
+    {
+
+    }
+
+    public void render()
+    {
+        shader.bind();
+        shader.updateUniforms(transform.getTransformation(), transform.getProjectedTransformation(), material);
+        mesh.draw();
+    }
+
+    private void addFace(ArrayList<Integer> indices, int startLocation, boolean direction)
+    {
+        if (direction) {
+            indices.add(startLocation + 2);
+            indices.add(startLocation + 1);
+            indices.add(startLocation + 0);
+            indices.add(startLocation + 3);
+            indices.add(startLocation + 2);
+            indices.add(startLocation + 0);
+        }
+        else {
+            indices.add(startLocation + 0);
+            indices.add(startLocation + 1);
+            indices.add(startLocation + 2);
+            indices.add(startLocation + 0);
+            indices.add(startLocation + 2);
+            indices.add(startLocation + 3);
+        }
+    }
+
+    private float[] calcTexCoords(int value)
+    {
+        int texX = value; // e.g. green component (0-255)
+        texX /= NUM_TEXTURES; // wolf.png has 16 textures: 0-15
+
+        int texY = texX % NUM_TEX_EXP; // 0->0, 1->1, 2->2, 3->3, 4->0, etc.
+        texX /= NUM_TEX_EXP;           // 0->0, 1->0, 2->0, 3->0, 4->1, etc.
+
+        float[] result = new float[4];
+
+        float XHigher = 1f - (float)texX/(float)NUM_TEX_EXP;
+        float XLower = XHigher - 1f/(float)NUM_TEX_EXP;
+        // YHigher and YLower swapped to flip textures upside down
+        float YLower = 1f - (float)texY/(float)NUM_TEX_EXP;
+        float YHigher = YLower - 1f/(float)NUM_TEX_EXP;
+
+        result[0] = XHigher;
+        result[1] = XLower;
+        result[2] = YHigher;
+        result[3] = YLower;
+
+        return result;
+    }
+
+    private void addVertices(ArrayList<Vertex> vertices, int i, int j, float offset, boolean x, boolean y, boolean z, float[] texCoords)
+    {
+        if (x && z) {
+            vertices.add(new Vertex(new Vector3f(i * SPOT_WIDTH, offset * SPOT_HEIGHT, j * SPOT_LENGTH), new Vector2f(texCoords[1], texCoords[3])));
+            vertices.add(new Vertex(new Vector3f((i + 1) * SPOT_WIDTH, offset * SPOT_HEIGHT, j * SPOT_LENGTH), new Vector2f(texCoords[0], texCoords[3])));
+            vertices.add(new Vertex(new Vector3f((i + 1) * SPOT_WIDTH, offset * SPOT_HEIGHT, (j + 1) * SPOT_LENGTH), new Vector2f(texCoords[0], texCoords[2])));
+            vertices.add(new Vertex(new Vector3f(i * SPOT_WIDTH, offset * SPOT_HEIGHT, (j + 1) * SPOT_LENGTH), new Vector2f(texCoords[1], texCoords[2])));
+        }
+        else if (x && y) {
+            vertices.add(new Vertex(new Vector3f(i * SPOT_WIDTH, j * SPOT_HEIGHT, offset * SPOT_LENGTH), new Vector2f(texCoords[1], texCoords[3])));
+            vertices.add(new Vertex(new Vector3f((i + 1)  * SPOT_WIDTH, j * SPOT_HEIGHT, offset * SPOT_LENGTH), new Vector2f(texCoords[0], texCoords[3])));
+            vertices.add(new Vertex(new Vector3f((i + 1) * SPOT_WIDTH, (j + 1) * SPOT_HEIGHT, offset * SPOT_LENGTH), new Vector2f(texCoords[0], texCoords[2])));
+            vertices.add(new Vertex(new Vector3f(i * SPOT_WIDTH, (j + 1) * SPOT_HEIGHT, offset * SPOT_LENGTH), new Vector2f(texCoords[1], texCoords[2])));
+        }
+        else if (y && z) {
+            vertices.add(new Vertex(new Vector3f(offset * SPOT_WIDTH, i * SPOT_HEIGHT,j * SPOT_LENGTH), new Vector2f(texCoords[1], texCoords[3])));
+            vertices.add(new Vertex(new Vector3f(offset * SPOT_WIDTH, i * SPOT_HEIGHT,(j + 1) * SPOT_LENGTH), new Vector2f(texCoords[0], texCoords[3])));
+            vertices.add(new Vertex(new Vector3f(offset * SPOT_WIDTH, (i + 1) * SPOT_HEIGHT,(j + 1) * SPOT_LENGTH), new Vector2f(texCoords[0], texCoords[2])));
+            vertices.add(new Vertex(new Vector3f(offset * SPOT_WIDTH, (i + 1) * SPOT_HEIGHT,j * SPOT_LENGTH), new Vector2f(texCoords[1], texCoords[2])));
+        }
+        else {
+            System.err.println("Invalid plane used in level generator");
+            new Exception().printStackTrace();
+            System.exit(1);
+        }
+    }
+
+    private void generateLevel()
+    {
         ArrayList<Vertex> vertices = new ArrayList<Vertex>();
         ArrayList<Integer> indices = new ArrayList<Integer>();
 
@@ -39,116 +133,44 @@ public class Level
                 }
 
                 // texture coords for floor and ceiling
-                int texX = ((level.getPixel(i, j) & 0x00FF00) >> 8); // green component (0-255)
-                texX /= NUM_TEXTURES; // wolf.png has 16 textures: 0-15
-
-                int texY = texX % NUM_TEX_EXP; // 0->0, 1->1, 2->2, 3->3, 4->0, etc.
-                texX /= NUM_TEX_EXP;           // 0->0, 1->0, 2->0, 3->0, 4->1, etc.
-
-                float XHigher = 1f - (float)texX/(float)NUM_TEX_EXP;
-                float XLower = XHigher - 1f/(float)NUM_TEX_EXP;
-                // YHigher and YLower swapped to flip textures upside down
-                float YLower = 1f - (float)texY/(float)NUM_TEX_EXP;
-                float YHigher = YLower - 1f/(float)NUM_TEX_EXP;
+                int texX = ((level.getPixel(i, j) & 0x00FF00) >> 8);
+                float[] texCoords = calcTexCoords(texX);
 
                 //Generate floor
-                indices.add(vertices.size() + 2);
-                indices.add(vertices.size() + 1);
-                indices.add(vertices.size() + 0);
-                indices.add(vertices.size() + 3);
-                indices.add(vertices.size() + 2);
-                indices.add(vertices.size() + 0);
-
-                vertices.add(new Vertex(new Vector3f(i * SPOT_WIDTH,0,j * SPOT_LENGTH), new Vector2f(XLower, YLower)));
-                vertices.add(new Vertex(new Vector3f((i + 1)  * SPOT_WIDTH,0,j * SPOT_LENGTH), new Vector2f(XHigher, YLower)));
-                vertices.add(new Vertex(new Vector3f((i + 1) * SPOT_WIDTH,0,(j + 1) * SPOT_LENGTH), new Vector2f(XHigher, YHigher)));
-                vertices.add(new Vertex(new Vector3f(i * SPOT_WIDTH,0,(j + 1) * SPOT_LENGTH), new Vector2f(XLower, YHigher)));
+                addFace(indices, vertices.size(), true);
+                addVertices(vertices, i, j, 0, true, false, true, texCoords);
 
                 //Generate ceiling
-                indices.add(vertices.size() + 0);
-                indices.add(vertices.size() + 1);
-                indices.add(vertices.size() + 2);
-                indices.add(vertices.size() + 0);
-                indices.add(vertices.size() + 2);
-                indices.add(vertices.size() + 3);
-
-                vertices.add(new Vertex(new Vector3f(i * SPOT_WIDTH, SPOT_HEIGHT,j * SPOT_LENGTH), new Vector2f(XLower, YLower)));
-                vertices.add(new Vertex(new Vector3f((i + 1)  * SPOT_WIDTH, SPOT_HEIGHT,j * SPOT_LENGTH), new Vector2f(XHigher, YLower)));
-                vertices.add(new Vertex(new Vector3f((i + 1) * SPOT_WIDTH, SPOT_HEIGHT,(j + 1) * SPOT_LENGTH), new Vector2f(XHigher, YHigher)));
-                vertices.add(new Vertex(new Vector3f(i * SPOT_WIDTH, SPOT_HEIGHT,(j + 1) * SPOT_LENGTH), new Vector2f(XLower, YHigher)));
-
-                // texture coordinates for walls
-                texX = ((level.getPixel(i, j) & 0xFF0000) >> 16); // red component (0-255)
-                texX /= NUM_TEXTURES;
-
-                texY = texX % NUM_TEX_EXP;
-                texX /= NUM_TEX_EXP;
-
-                XHigher = 1f - (float)texX/(float)NUM_TEX_EXP;
-                XLower = XHigher - 1f/(float)NUM_TEX_EXP;
-                // YHigher and YLower swapped to flip textures upside down
-                YLower = 1f - (float)texY/(float)NUM_TEX_EXP;
-                YHigher = YLower - 1f/(float)NUM_TEX_EXP;
+                addFace(indices, vertices.size(), false);
+                addVertices(vertices, i, j, 1,true, false, true, texCoords);
 
                 //Generate Walls
+                // texture coordinates for walls
+                texX = ((level.getPixel(i, j) & 0xFF0000) >> 16); // red component (0-255)
+                texCoords = calcTexCoords(texX);
+
                 if ((level.getPixel(i, j - 1) & 0xFFFFFF) == 0)
                 {
-                    indices.add(vertices.size() + 0);
-                    indices.add(vertices.size() + 1);
-                    indices.add(vertices.size() + 2);
-                    indices.add(vertices.size() + 0);
-                    indices.add(vertices.size() + 2);
-                    indices.add(vertices.size() + 3);
-
-                    vertices.add(new Vertex(new Vector3f(i * SPOT_WIDTH, 0,j * SPOT_LENGTH), new Vector2f(XLower, YLower)));
-                    vertices.add(new Vertex(new Vector3f((i + 1)  * SPOT_WIDTH, 0,j * SPOT_LENGTH), new Vector2f(XHigher, YLower)));
-                    vertices.add(new Vertex(new Vector3f((i + 1) * SPOT_WIDTH, SPOT_HEIGHT,j * SPOT_LENGTH), new Vector2f(XHigher, YHigher)));
-                    vertices.add(new Vertex(new Vector3f(i * SPOT_WIDTH, SPOT_HEIGHT,j * SPOT_LENGTH), new Vector2f(XLower, YHigher)));
+                    addFace(indices, vertices.size(), false);
+                    addVertices(vertices, i, 0, j, true, true, false, texCoords);
                 }
 
                 if ((level.getPixel(i, j + 1) & 0xFFFFFF) == 0)
                 {
-                    indices.add(vertices.size() + 2);
-                    indices.add(vertices.size() + 1);
-                    indices.add(vertices.size() + 0);
-                    indices.add(vertices.size() + 3);
-                    indices.add(vertices.size() + 2);
-                    indices.add(vertices.size() + 0);
-
-                    vertices.add(new Vertex(new Vector3f(i * SPOT_WIDTH, 0,(j + 1) * SPOT_LENGTH), new Vector2f(XLower, YLower)));
-                    vertices.add(new Vertex(new Vector3f((i + 1)  * SPOT_WIDTH, 0,(j + 1) * SPOT_LENGTH), new Vector2f(XHigher, YLower)));
-                    vertices.add(new Vertex(new Vector3f((i + 1) * SPOT_WIDTH, SPOT_HEIGHT,(j + 1) * SPOT_LENGTH), new Vector2f(XHigher, YHigher)));
-                    vertices.add(new Vertex(new Vector3f(i * SPOT_WIDTH, SPOT_HEIGHT,(j + 1) * SPOT_LENGTH), new Vector2f(XLower, YHigher)));
+                    addFace(indices, vertices.size(), true);
+                    addVertices(vertices, i, 0, (j + 1), true, true, false, texCoords);
                 }
 
                 if ((level.getPixel(i - 1, j) & 0xFFFFFF) == 0)
                 {
-                    indices.add(vertices.size() + 2);
-                    indices.add(vertices.size() + 1);
-                    indices.add(vertices.size() + 0);
-                    indices.add(vertices.size() + 3);
-                    indices.add(vertices.size() + 2);
-                    indices.add(vertices.size() + 0);
-
-                    vertices.add(new Vertex(new Vector3f(i * SPOT_WIDTH, 0,j * SPOT_LENGTH), new Vector2f(XLower, YLower)));
-                    vertices.add(new Vertex(new Vector3f(i * SPOT_WIDTH, 0,(j + 1) * SPOT_LENGTH), new Vector2f(XHigher, YLower)));
-                    vertices.add(new Vertex(new Vector3f(i * SPOT_WIDTH, SPOT_HEIGHT,(j + 1) * SPOT_LENGTH), new Vector2f(XHigher, YHigher)));
-                    vertices.add(new Vertex(new Vector3f(i * SPOT_WIDTH, SPOT_HEIGHT,j * SPOT_LENGTH), new Vector2f(XLower, YHigher)));
+                    addFace(indices, vertices.size(), true);
+                    addVertices(vertices, 0, j, i,false, true, true, texCoords);
                 }
 
                 if ((level.getPixel(i + 1, j) & 0xFFFFFF) == 0)
                 {
-                    indices.add(vertices.size() + 0);
-                    indices.add(vertices.size() + 1);
-                    indices.add(vertices.size() + 2);
-                    indices.add(vertices.size() + 0);
-                    indices.add(vertices.size() + 2);
-                    indices.add(vertices.size() + 3);
-
-                    vertices.add(new Vertex(new Vector3f((i + 1) * SPOT_WIDTH, 0,j * SPOT_LENGTH), new Vector2f(XLower, YLower)));
-                    vertices.add(new Vertex(new Vector3f((i + 1) * SPOT_WIDTH, 0,(j + 1) * SPOT_LENGTH), new Vector2f(XHigher, YLower)));
-                    vertices.add(new Vertex(new Vector3f((i + 1) * SPOT_WIDTH, SPOT_HEIGHT,(j + 1) * SPOT_LENGTH), new Vector2f(XHigher, YHigher)));
-                    vertices.add(new Vertex(new Vector3f((i + 1) * SPOT_WIDTH, SPOT_HEIGHT,j * SPOT_LENGTH), new Vector2f(XLower, YHigher)));
+                    addFace(indices, vertices.size(), false);
+                    addVertices(vertices, 0, j, (i + 1), false, true, true, texCoords);
                 }
 
             }
@@ -172,25 +194,6 @@ public class Level
         indices.toArray(intArray);
 
         mesh = new Mesh(vertArray, Util.toIntArray(intArray));
-        transform = new Transform();
-
-    }
-
-    public void input()
-    {
-
-    }
-
-    public void update()
-    {
-
-    }
-
-    public void render()
-    {
-        shader.bind();
-        shader.updateUniforms(transform.getTransformation(), transform.getProjectedTransformation(), material);
-        mesh.draw();
     }
 
 }
