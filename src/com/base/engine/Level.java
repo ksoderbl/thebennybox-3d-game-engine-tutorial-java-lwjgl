@@ -13,27 +13,23 @@ public class Level
     private static final float SPOT_HEIGHT = 1;
 
     private Mesh mesh;
-    private Bitmap level;
+    private Bitmap bitmap;
     private Shader shader;
     private Material material;
     private Transform transform;
 
-    // temp variable
-    private Door door;
+    private ArrayList<Door> doors;
 
     public Level(String levelName, String textureName)
     {
-        level = new Bitmap(levelName).flipY();
+        bitmap = new Bitmap(levelName).flipY();
         material = new Material(new Texture(textureName), new Vector3f(1, 1, 1));
         transform = new Transform();
+        doors = new ArrayList<>();
 
         shader = BasicShader.getInstance();
 
         generateLevel();
-
-        Transform doorTransform = new Transform();
-        doorTransform.setTranslation(7.5f,0,8);
-        door = new Door(doorTransform, material);
     }
 
     public void input()
@@ -43,7 +39,10 @@ public class Level
 
     public void update()
     {
-        door.update();
+        for (Door door : doors)
+        {
+            door.update();
+        }
     }
 
     public void render()
@@ -51,7 +50,9 @@ public class Level
         shader.bind();
         shader.updateUniforms(transform.getTransformation(), transform.getProjectedTransformation(), material);
         mesh.draw();
-        door.render();
+        for (Door door : doors) {
+            door.render();
+        }
     }
 
     public Vector3f checkCollision(Vector3f oldPos, Vector3f newPos, float objectWidth, float objectLength)
@@ -67,25 +68,29 @@ public class Level
             Vector2f oldPos2 = new Vector2f(oldPos.getX(), oldPos.getZ());
             Vector2f newPos2 = new Vector2f(newPos.getX(), newPos.getZ());
 
-            for (int i = 0; i < level.getWidth(); i++)
+            for (int i = 0; i < bitmap.getWidth(); i++)
             {
-                for (int j = 0; j < level.getHeight(); j++)
+                for (int j = 0; j < bitmap.getHeight(); j++)
                 {
-                    if((level.getPixel(i, j) & 0xFFFFFF) == 0)
+                    if (isWall(i, j))
                     {
                         collisionVector = collisionVector.mul(rectCollide(oldPos2, newPos2, objectSize, blockSize.mul(new Vector2f(i, j)), blockSize));
                     }
                 }
             }
 
-            Vector2f doorSize = new Vector2f(Door.LENGTH, Door.WIDTH);
-
-            Vector3f doorPos3f = door.getTransform().getTranslation();
-            Vector2f doorPos2f = new Vector2f(doorPos3f.getX(), doorPos3f.getZ());
-            collisionVector = collisionVector.mul(rectCollide(oldPos2, newPos2, objectSize, doorPos2f, doorSize));
+            //Vector2f doorSize = new Vector2f(Door.LENGTH, Door.WIDTH);
+            //Vector3f doorPos3f = door.getTransform().getTranslation();
+            //Vector2f doorPos2f = new Vector2f(doorPos3f.getX(), doorPos3f.getZ());
+            //collisionVector = collisionVector.mul(rectCollide(oldPos2, newPos2, objectSize, doorPos2f, doorSize));
         }
 
         return new Vector3f(collisionVector.getX(), 0, collisionVector.getY());
+    }
+
+    private boolean isWall(int x, int z)
+    {
+        return ((bitmap.getPixel(x, z) & 0xFFFFFF) == 0);
     }
 
     private Vector2f rectCollide(Vector2f oldPos, Vector2f newPos, Vector2f size1, Vector2f pos2, Vector2f size2)
@@ -176,23 +181,65 @@ public class Level
         }
     }
 
+    private void addDoor(int x, int y)
+    {
+        Transform doorTransform = new Transform();
+
+        // or instead of and to allow double doors e.g.
+        boolean xDoor = isWall(x, y - 1) || isWall(x, y + 1);
+        boolean yDoor = isWall(x - 1 , y) || isWall(x + 1, y);
+
+        if (!(xDoor ^ yDoor))
+        {
+            System.err.println("Level Generation has failed! :( You placed a door in an invalid location at " + x + ", " + y);
+            new Exception().printStackTrace();
+            System.exit(1);
+        }
+
+        if (yDoor)
+        {
+            doorTransform.setTranslation(x, 0, y + SPOT_LENGTH / 2);
+        }
+
+        if (xDoor)
+        {
+            doorTransform.setTranslation(x + SPOT_WIDTH / 2, 0, y);
+            doorTransform.setRotation(0, 90, 0);
+        }
+
+        Door result = new Door(doorTransform, material);
+        doors.add(result);
+    }
+
+    private void addSpecial(int blueValue, int x, int y)
+    {
+        if (blueValue == 16)
+        {
+            addDoor(x, y);
+        }
+    }
+
     private void generateLevel()
     {
         ArrayList<Vertex> vertices = new ArrayList<Vertex>();
         ArrayList<Integer> indices = new ArrayList<Integer>();
 
-        for (int i = 0; i < level.getWidth(); i++)
+        for (int i = 0; i < bitmap.getWidth(); i++)
         {
-            for (int j = 0; j < level.getHeight(); j++)
+            for (int j = 0; j < bitmap.getHeight(); j++)
             {
-                if ((level.getPixel(i, j) & 0xFFFFFF) == 0) {
+                if (isWall(i, j)) {
                     // inside wall
                     continue;
                 }
 
                 // texture coords for floor and ceiling
-                int texX = ((level.getPixel(i, j) & 0x00FF00) >> 8);
-                float[] texCoords = calcTexCoords(texX);
+                int greenValue = ((bitmap.getPixel(i, j) & 0x00FF00) >> 8);
+                float[] texCoords = calcTexCoords(greenValue);
+
+                // special stuff: blue channel
+                int blueValue = (bitmap.getPixel(i, j) & 0x0000FF);
+                addSpecial(blueValue, i, j);
 
                 //Generate floor
                 addFace(indices, vertices.size(), true);
@@ -204,28 +251,28 @@ public class Level
 
                 //Generate Walls
                 // texture coordinates for walls
-                texX = ((level.getPixel(i, j) & 0xFF0000) >> 16); // red component (0-255)
-                texCoords = calcTexCoords(texX);
+                int redValue = ((bitmap.getPixel(i, j) & 0xFF0000) >> 16); // red component (0-255)
+                texCoords = calcTexCoords(redValue);
 
-                if ((level.getPixel(i, j - 1) & 0xFFFFFF) == 0)
+                if (isWall(i, j - 1))
                 {
                     addFace(indices, vertices.size(), false);
                     addVertices(vertices, i, 0, j, true, true, false, texCoords);
                 }
 
-                if ((level.getPixel(i, j + 1) & 0xFFFFFF) == 0)
+                if (isWall(i, j + 1))
                 {
                     addFace(indices, vertices.size(), true);
                     addVertices(vertices, i, 0, (j + 1), true, true, false, texCoords);
                 }
 
-                if ((level.getPixel(i - 1, j) & 0xFFFFFF) == 0)
+                if (isWall(i - 1, j))
                 {
                     addFace(indices, vertices.size(), true);
                     addVertices(vertices, 0, j, i,false, true, true, texCoords);
                 }
 
-                if ((level.getPixel(i + 1, j) & 0xFFFFFF) == 0)
+                if (isWall(i + 1, j))
                 {
                     addFace(indices, vertices.size(), false);
                     addVertices(vertices, 0, j, (i + 1), false, true, true, texCoords);
