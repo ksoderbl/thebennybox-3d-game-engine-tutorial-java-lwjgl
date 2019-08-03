@@ -79,10 +79,13 @@ public class Level
                 }
             }
 
-            //Vector2f doorSize = new Vector2f(Door.LENGTH, Door.WIDTH);
-            //Vector3f doorPos3f = door.getTransform().getTranslation();
-            //Vector2f doorPos2f = new Vector2f(doorPos3f.getX(), doorPos3f.getZ());
-            //collisionVector = collisionVector.mul(rectCollide(oldPos2, newPos2, objectSize, doorPos2f, doorSize));
+            //TODO: make this take into account the door's orientation
+            Vector2f doorSize = new Vector2f(Door.LENGTH, Door.WIDTH);
+            for (Door door: doors) {
+                Vector3f doorPos3f = door.getTransform().getTranslation();
+                Vector2f doorPos2f = new Vector2f(doorPos3f.getX(), doorPos3f.getZ());
+                collisionVector = collisionVector.mul(rectCollide(oldPos2, newPos2, objectSize, doorPos2f, doorSize));
+            }
         }
 
         return new Vector3f(collisionVector.getX(), 0, collisionVector.getY());

@@ -8,15 +8,28 @@ public class Door
     public static final float HEIGHT = 1;
     public static final float WIDTH = 0.125f;
     public static final float START = 0;
+    public static final double TIME_TO_OPEN = 1.0;
+    public static final double CLOSE_DELAY = 2.0;
 
     private static Mesh mesh;
     private Material material;
     private Transform transform;
 
+    private Vector3f openPosition;
+    private Vector3f closePosition;
+
+    private boolean isOpening;
+    private double openingStartTime;
+    private double openTime;
+    private double closingStartTime;
+    private double closeTime;
+
     public Door(Transform transform, Material material)
     {
         this.transform = transform;
         this.material = material;
+        this.isOpening = false;
+        this.closePosition = transform.getTranslation().mul(1);
 
         if (mesh == null)
         {
@@ -65,9 +78,25 @@ public class Door
         }
     }
 
+    public void open()
+    {
+        if (isOpening)
+            return;
+
+        openingStartTime = (double)Time.getTime()/(double)Time.SECOND;
+        openTime = openingStartTime + TIME_TO_OPEN;
+        closingStartTime = openTime + CLOSE_DELAY;
+        closeTime = closingStartTime + TIME_TO_OPEN;
+
+        isOpening = true;
+    }
+
     public void update()
     {
+        if (isOpening)
+        {
 
+        }
     }
 
     public void render()
