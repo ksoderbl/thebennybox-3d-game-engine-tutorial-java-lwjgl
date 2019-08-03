@@ -4,37 +4,50 @@ import java.util.ArrayList;
 
 public class Level
 {
-    private static final int NUM_TEX_EXP = 4;
-    private static final int NUM_TEXTURES = (int)Math.pow(2, NUM_TEX_EXP);
-
-    // wolfenstein 3D
     private static final float SPOT_WIDTH = 1;
     private static final float SPOT_LENGTH = 1;
     private static final float SPOT_HEIGHT = 1;
+    
+    private static final int NUM_TEX_EXP = 4;
+    private static final int NUM_TEXTURES = (int)Math.pow(2, NUM_TEX_EXP);
+    private static final float OPEN_DISTANCE = 1.0f;
+    private static final float DOOR_OPEN_MOVEMENT_AMOUNT = 0.9f;
 
     private Mesh mesh;
     private Bitmap bitmap;
     private Shader shader;
     private Material material;
     private Transform transform;
+    private Player player;
 
     private ArrayList<Door> doors;
 
-    public Level(String levelName, String textureName)
+    public Level(String levelName, String textureName, Player player)
     {
-        bitmap = new Bitmap(levelName).flipY();
+        this.player = player;
+    	bitmap = new Bitmap(levelName).flipY();
         material = new Material(new Texture(textureName), new Vector3f(1, 1, 1));
         transform = new Transform();
-        doors = new ArrayList<>();
 
         shader = BasicShader.getInstance();
-
+        doors = new ArrayList<>();
+        
         generateLevel();
     }
 
     public void input()
     {
-
+    	if (Input.getKeyDown(Input.KEY_E))
+    	{
+    		for (Door door : doors)
+    		{
+    			if (door.getTransform().getTranslation().sub(player.getCamera().getPos()).length() < OPEN_DISTANCE)
+    			{
+    				door.open();
+    			}
+    		}
+    	}
+    	player.input();
     }
 
     public void update()
@@ -43,6 +56,7 @@ public class Level
         {
             door.update();
         }
+        player.update();
     }
 
     public void render()
@@ -53,6 +67,7 @@ public class Level
         for (Door door : doors) {
             door.render();
         }
+        player.render();
     }
 
     public Vector3f checkCollision(Vector3f oldPos, Vector3f newPos, float objectWidth, float objectLength)
@@ -79,9 +94,8 @@ public class Level
                 }
             }
 
-            //TODO: make this take into account the door's orientation
-            Vector2f doorSize = new Vector2f(Door.LENGTH, Door.WIDTH);
             for (Door door: doors) {
+            	Vector2f doorSize = door.getDoorSize();
                 Vector3f doorPos3f = door.getTransform().getTranslation();
                 Vector2f doorPos2f = new Vector2f(doorPos3f.getX(), doorPos3f.getZ());
                 collisionVector = collisionVector.mul(rectCollide(oldPos2, newPos2, objectSize, doorPos2f, doorSize));
@@ -189,8 +203,8 @@ public class Level
         Transform doorTransform = new Transform();
 
         // or instead of and to allow double doors e.g.
-        boolean xDoor = isWall(x, y - 1) || isWall(x, y + 1);
-        boolean yDoor = isWall(x - 1 , y) || isWall(x + 1, y);
+        boolean xDoor = isWall(x, y - 1) && isWall(x, y + 1);
+        boolean yDoor = isWall(x - 1 , y) && isWall(x + 1, y);
 
         if (!(xDoor ^ yDoor))
         {
@@ -199,18 +213,22 @@ public class Level
             System.exit(1);
         }
 
+        Vector3f openPosition = null;
+        
         if (yDoor)
         {
             doorTransform.setTranslation(x, 0, y + SPOT_LENGTH / 2);
+            openPosition = doorTransform.getTranslation().sub(new Vector3f(DOOR_OPEN_MOVEMENT_AMOUNT, 0.0f, 0.0f));
         }
 
         if (xDoor)
         {
             doorTransform.setTranslation(x + SPOT_WIDTH / 2, 0, y);
             doorTransform.setRotation(0, 90, 0);
+            openPosition = doorTransform.getTranslation().sub(new Vector3f(0.0f, 0.0f, DOOR_OPEN_MOVEMENT_AMOUNT));
         }
 
-        Door result = new Door(doorTransform, material);
+        Door result = new Door(doorTransform, material, openPosition);
         doors.add(result);
     }
 

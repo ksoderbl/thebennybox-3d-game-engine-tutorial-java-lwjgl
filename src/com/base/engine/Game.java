@@ -23,14 +23,14 @@ public class Game
 	// wolfenstein 3D
 	private boolean wolfenstein3Dclone = true;
 	private static Level level;
-	private Player player;
+	//private Player player;
 
 	public Game()
 	{
 		if (wolfenstein3Dclone)
 		{
-			level = new Level("level1.png", "wolf.png");
-			player = new Player(new Vector3f(9,0.4375f,12));
+			Player player = new Player(new Vector3f(9,0.4375f,12));
+			level = new Level("level1.png", "wolf.png", player);
 
 			Transform.setProjection(70.0f, Window.getWidth(), Window.getHeight(), 0.01f, 1000f);
 			Transform.setCamera(player.getCamera());
@@ -53,7 +53,6 @@ public class Game
 		{
 			level.input();
 			//Transform.getCamera().input();
-			player.input();
 		}
 
 		if (tutorial31stuff)
@@ -67,7 +66,6 @@ public class Game
 		if (wolfenstein3Dclone)
 		{
 			level.update();
-			player.update();
 		}
 
 		if (tutorial31stuff)
@@ -81,7 +79,6 @@ public class Game
 		if (wolfenstein3Dclone)
 		{
 			level.render();
-			player.render();
 		}
 
 		if (tutorial31stuff)

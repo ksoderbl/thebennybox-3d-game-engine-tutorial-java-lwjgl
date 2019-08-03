@@ -8,7 +8,7 @@ public class Door
     public static final float HEIGHT = 1;
     public static final float WIDTH = 0.125f;
     public static final float START = 0;
-    public static final double TIME_TO_OPEN = 1.0;
+    public static final double TIME_TO_OPEN = 0.25;
     public static final double CLOSE_DELAY = 2.0;
 
     private static Mesh mesh;
@@ -24,12 +24,13 @@ public class Door
     private double closingStartTime;
     private double closeTime;
 
-    public Door(Transform transform, Material material)
+    public Door(Transform transform, Material material, Vector3f openPosition)
     {
         this.transform = transform;
         this.material = material;
         this.isOpening = false;
         this.closePosition = transform.getTranslation().mul(1);
+        this.openPosition = openPosition;
 
         if (mesh == null)
         {
@@ -91,11 +92,37 @@ public class Door
         isOpening = true;
     }
 
+    // lerpFactor 0 => returns startPos
+    // lerpFactor 1 => returns endPos
+    public Vector3f VectorLerp(Vector3f startPos, Vector3f endPos, float lerpFactor)
+    {
+    	return startPos.add(endPos.sub(startPos).mul(lerpFactor));
+    }
+    
     public void update()
     {
         if (isOpening)
         {
-
+        	double time = (double)Time.getTime()/(double)Time.SECOND;
+        	
+        	if (time < openTime)
+        	{
+        		float lerpFactor = (float) ((time - openingStartTime) / TIME_TO_OPEN);
+        		getTransform().setTranslation(VectorLerp(closePosition, openPosition, lerpFactor));
+        	}
+        	else if (time < closingStartTime)
+        	{
+        		getTransform().setTranslation(openPosition);
+        	}
+        	else if (time < closeTime)
+        	{
+        		float lerpFactor = (float) ((time - closingStartTime) / TIME_TO_OPEN);
+        		getTransform().setTranslation(VectorLerp(openPosition, closePosition, lerpFactor));
+        	}
+        	else {
+        		getTransform().setTranslation(closePosition);
+        		isOpening = false;
+        	}
         }
     }
 
@@ -107,10 +134,19 @@ public class Door
         //TODO: bind/update shader
         mesh.draw();
     }
+    
+    public Vector2f getDoorSize()
+    {
+    	if (getTransform().getRotation().getY() == 90) {
+    		return new Vector2f(Door.WIDTH, Door.LENGTH);
+    	}
+    	else {
+    		return new Vector2f(Door.LENGTH, Door.WIDTH);
+    	}
+    }
 
     public Transform getTransform()
     {
         return transform;
     }
-
 }
