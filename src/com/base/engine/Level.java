@@ -19,8 +19,10 @@ public class Level
     private Material material;
     private Transform transform;
     private Player player;
-
     private ArrayList<Door> doors;
+
+    //TEMP VARIABLE
+    private Monster monster;
 
     public Level(String levelName, String textureName, Player player)
     {
@@ -33,6 +35,9 @@ public class Level
         doors = new ArrayList<>();
         
         generateLevel();
+        Transform tempTransform = new Transform();
+        tempTransform.setTranslation(new Vector3f(8,0,8));
+        monster = new Monster(tempTransform);
     }
 
     public void input()
@@ -57,6 +62,7 @@ public class Level
             door.update();
         }
         player.update();
+        monster.update();
     }
 
     public void render()
@@ -68,6 +74,7 @@ public class Level
             door.render();
         }
         player.render();
+        monster.render();
     }
 
     public Vector3f checkCollision(Vector3f oldPos, Vector3f newPos, float objectWidth, float objectLength)

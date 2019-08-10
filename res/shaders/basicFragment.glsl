@@ -9,13 +9,5 @@ out vec4 fragColor;
 
 void main()
 {
-    vec4 textureColor = texture2D(sampler, texCoord0.xy);
-
-    // doesn't work: if (textureColor == 0)
-    if (textureColor == vec4(0,0,0,0)) {
-        fragColor = vec4(color, 1);
-    }
-    else {
-        fragColor = textureColor * vec4(color, 1);
-    }
+    fragColor = texture(sampler, texCoord0.xy) * vec4(color, 1);
 }
