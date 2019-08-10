@@ -11,23 +11,32 @@ public class Monster
     // use these if loading textures with slick-util
     //public static final float OFFSET_X = 0.05f;
     //public static final float OFFSET_Y = 0.01f;
+    //public static final float OFFSET_FROM_GROUND = -0.075f;
     
     public static final float OFFSET_X = 0.0f;
     public static final float OFFSET_Y = 0.0f;
+    public static final float OFFSET_FROM_GROUND = 0.0f;
     
     public static final float TEX_MIN_X = -OFFSET_X;
     public static final float TEX_MAX_X = -1 - OFFSET_X;
     public static final float TEX_MIN_Y = -OFFSET_Y;
     public static final float TEX_MAX_Y = 1 - OFFSET_Y;
     
-	
+    public static final int STATE_IDLE = 0;
+    public static final int STATE_CHASE = 1;
+    public static final int STATE_ATTACK = 2;
+    public static final int STATE_DYING = 3;
+    public static final int STATE_DEAD = 4;
+    
 	private static Mesh mesh;
     private Material material;
     private Transform transform;
+    private int state;
 	
 	public Monster(Transform transform)
 	{
 		this.transform = transform;
+		this.state = STATE_IDLE;
 		material = new Material(new Texture("SSWVA1.png"), new Vector3f(1, 1, 1)); 
 		
         if (mesh == null)
@@ -48,8 +57,63 @@ public class Monster
         }
 	}
 	
+	private void idleUpdate()
+	{
+		
+	}
+
+	private void chaseUpdate()
+	{
+		
+	}
+
+	private void attackUpdate()
+	{
+		
+	}
+
+	private void dyingUpdate()
+	{
+		
+	}
+
+	private void deadUpdate()
+	{
+		
+	}
+
+	private void alignWithGround()
+	{
+		transform.getTranslation().setY(OFFSET_FROM_GROUND);
+	}
+	
+	private void faceCamera()
+	{
+		Vector3f directionToCamera = transform.getTranslation().sub(Transform.getCamera().getPos());
+		
+		double x = (double)directionToCamera.getX();
+		double z = (double)directionToCamera.getZ();
+		
+		double angle = -Math.toDegrees(Math.atan2(x, z));
+		
+		float angleToFaceTheCamera = (float)angle; 
+		
+		transform.getRotation().setY(angleToFaceTheCamera);
+	}
+	
 	public void update()
 	{
+		alignWithGround();
+		faceCamera();
+		
+		switch (state)
+		{
+		case STATE_IDLE: idleUpdate(); break;
+		case STATE_CHASE: chaseUpdate(); break;
+		case STATE_ATTACK: attackUpdate(); break;
+		case STATE_DYING: dyingUpdate(); break;
+		case STATE_DEAD: deadUpdate(); break;
+		}
 	}
 	
 	public void render()
