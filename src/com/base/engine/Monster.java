@@ -33,6 +33,8 @@ public class Monster
     public static final float MONSTER_WIDTH = 0.2f;
     public static final float MONSTER_LENGTH = 0.2f;
     
+    public static final float SHOOT_DISTANCE = 1000.0f;
+    
 	private static Mesh mesh;
     private Material material;
     private Transform transform;
@@ -41,7 +43,7 @@ public class Monster
 	public Monster(Transform transform)
 	{
 		this.transform = transform;
-		this.state = STATE_CHASE;
+		this.state = STATE_ATTACK;
 		material = new Material(new Texture("SSWVA1.png"), new Vector3f(1, 1, 1)); 
 		
         if (mesh == null)
@@ -98,7 +100,21 @@ public class Monster
 
 	private void attackUpdate(Vector3f orientation, float distance)
 	{
+		Vector2f lineStart = new Vector2f(transform.getTranslation().getX(), transform.getTranslation().getZ());
+		Vector2f castDirection = new Vector2f(orientation.getX(), orientation.getZ());
+		Vector2f lineEnd = lineStart.add(castDirection.mul(SHOOT_DISTANCE));
 		
+		Vector2f collisionVector = Game.getLevel().checkIntersections(lineStart, lineEnd);
+		
+		if (collisionVector == null)
+		{
+			System.out.println("We've missed everything!");
+		}
+		else {
+			System.out.println("We've hit something!");
+		}
+		
+		state = STATE_CHASE;
 	}
 
 	private void dyingUpdate(Vector3f orientation, float distance)

@@ -20,6 +20,8 @@ public class Level
     private Transform transform;
     private Player player;
     private ArrayList<Door> doors;
+    private ArrayList<Vector2f> collisionPosStart;
+    private ArrayList<Vector2f> collisionPosEnd;
 
     //TEMP VARIABLE
     private Monster monster;
@@ -32,7 +34,9 @@ public class Level
         transform = new Transform();
 
         shader = BasicShader.getInstance();
-        doors = new ArrayList<>();
+        doors = new ArrayList<Door>();
+        collisionPosStart = new ArrayList<Vector2f>();
+        collisionPosEnd = new ArrayList<Vector2f>();
         
         generateLevel();
         Transform tempTransform = new Transform();
@@ -116,6 +120,58 @@ public class Level
 
         return new Vector3f(collisionVector.getX(), 0, collisionVector.getY());
     }
+    
+    public Vector2f checkIntersections(Vector2f lineStart, Vector2f lineEnd)
+    {
+    	Vector2f nearestIntersection = null;
+    	
+    	for (int i = 0; i < collisionPosStart.size(); i++)
+    	{
+    		Vector2f collisionVector = lineIntersect(lineStart, lineEnd, collisionPosStart.get(i), collisionPosEnd.get(i));
+    		
+    		if (collisionVector != null
+    			&& (nearestIntersection == null
+    				|| nearestIntersection.sub(lineStart).length() > collisionVector.sub(lineStart).length())) 
+    		{
+    			nearestIntersection = collisionVector;
+    		}
+    	}
+    	
+    	return nearestIntersection;
+    }
+    
+    private float Vector2fCross(Vector2f a, Vector2f b)
+    {
+    	return a.getX() * b.getY() - a.getY() * b.getX();
+    }
+    
+    // https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect
+    private Vector2f lineIntersect(Vector2f lineStart1, Vector2f lineEnd1, Vector2f lineStart2, Vector2f lineEnd2)
+    {
+    	Vector2f line1 = lineEnd1.sub(lineStart1);
+    	Vector2f line2 = lineEnd2.sub(lineStart2);
+    	
+    	//lineStart1 + line1 = lineEnd1
+    	//lineStart1 + line1 * a == lineStart2 + line2 * b
+    	
+    	float cross = Vector2fCross(line1, line2);
+    	if (cross == 0) {
+    		return null;
+    	}
+    	
+    	Vector2f distanceBetweenLineStarts = lineStart2.sub(lineStart1);
+    	
+    	float a = Vector2fCross(distanceBetweenLineStarts, line2) / cross; 
+    	float b = Vector2fCross(distanceBetweenLineStarts, line1) / cross;
+    	
+    	if (0.0f < a && a < 1.0f && 0.0f < b && b < 1.0f)
+    	{
+    		return lineStart1.add(line1.mul(a));
+    	}
+    	
+    	return null;
+    }
+    
 
     private boolean isWall(int x, int z)
     {
@@ -127,15 +183,20 @@ public class Level
         Vector2f result = new Vector2f(0,0);
 
         if (newPos.getX() + size1.getX() < pos2.getX() ||
-                newPos.getX() - size1.getX() > pos2.getX() + size2.getX() * size2.getX() ||
-                oldPos.getY() + size1.getY() < pos2.getY() ||
-                oldPos.getY() - size1.getY() > pos2.getY() + size2.getY() * size2.getY())
+            newPos.getX() - size1.getX() > pos2.getX() + size2.getX() * size2.getX() ||
+            oldPos.getY() + size1.getY() < pos2.getY() ||
+            oldPos.getY() - size1.getY() > pos2.getY() + size2.getY() * size2.getY())
+        {
             result.setX(1);
+        }
         if (oldPos.getX() + size1.getX() < pos2.getX() ||
-                oldPos.getX() - size1.getX() > pos2.getX() + size2.getX() * size2.getX() ||
-                newPos.getY() + size1.getY() < pos2.getY() ||
-                newPos.getY() - size1.getY() > pos2.getY() + size2.getY() * size2.getY())
+            oldPos.getX() - size1.getX() > pos2.getX() + size2.getX() * size2.getX() ||
+            newPos.getY() + size1.getY() < pos2.getY() ||
+            newPos.getY() - size1.getY() > pos2.getY() + size2.getY() * size2.getY())
+        {
             result.setY(1);
+        }
+        
         return result;
     }
 
@@ -289,24 +350,32 @@ public class Level
 
                 if (isWall(i, j - 1))
                 {
+                	collisionPosStart.add(new Vector2f(i * SPOT_WIDTH, j * SPOT_LENGTH));
+                	collisionPosEnd.add(new Vector2f((i + 1) * SPOT_WIDTH, j * SPOT_LENGTH));
                     addFace(indices, vertices.size(), false);
                     addVertices(vertices, i, 0, j, true, true, false, texCoords);
                 }
 
                 if (isWall(i, j + 1))
                 {
+                	collisionPosStart.add(new Vector2f(i * SPOT_WIDTH, (j + 1) * SPOT_LENGTH));
+                	collisionPosEnd.add(new Vector2f((i + 1) * SPOT_WIDTH, (j + 1) * SPOT_LENGTH));
                     addFace(indices, vertices.size(), true);
                     addVertices(vertices, i, 0, (j + 1), true, true, false, texCoords);
                 }
 
                 if (isWall(i - 1, j))
                 {
+                	collisionPosStart.add(new Vector2f(i * SPOT_WIDTH, j * SPOT_LENGTH));
+                	collisionPosEnd.add(new Vector2f(i * SPOT_WIDTH, (j + 1) * SPOT_LENGTH));
                     addFace(indices, vertices.size(), true);
                     addVertices(vertices, 0, j, i,false, true, true, texCoords);
                 }
 
                 if (isWall(i + 1, j))
                 {
+                	collisionPosStart.add(new Vector2f((i + 1) * SPOT_WIDTH, j * SPOT_LENGTH));
+                	collisionPosEnd.add(new Vector2f((i + 1) * SPOT_WIDTH, (j + 1) * SPOT_LENGTH));
                     addFace(indices, vertices.size(), false);
                     addVertices(vertices, 0, j, (i + 1), false, true, true, texCoords);
                 }
