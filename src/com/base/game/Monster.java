@@ -1,5 +1,7 @@
 package com.base.game;
 
+import java.util.Random;
+
 import com.base.engine.core.Time;
 import com.base.engine.core.Transform;
 import com.base.engine.core.Vector2f;
@@ -44,16 +46,19 @@ public class Monster
     public static final float MONSTER_LENGTH = 0.2f;
     
     public static final float SHOOT_DISTANCE = 1000.0f;
+    public static final float SHOT_ANGLE = 10.0f;
     
 	private static Mesh mesh;
     private Material material;
     private Transform transform;
+    private Random rand;
     private int state;
 	
 	public Monster(Transform transform)
 	{
 		this.transform = transform;
 		this.state = STATE_ATTACK;
+		this.rand = new Random();
 		material = new Material(new Texture("SSWVA1.png"), new Vector3f(1, 1, 1)); 
 		
         if (mesh == null)
@@ -86,7 +91,7 @@ public class Monster
 		
 		if (distance > MOVEMENT_STOP_DISTANCE)
 		{
-			float moveAmount = -MOVE_SPEED * (float)Time.getDelta();
+			float moveAmount = MOVE_SPEED * (float)Time.getDelta();
 			
 			Vector3f oldPos = transform.getTranslation();
 			Vector3f newPos = transform.getTranslation().add(orientation.mul(moveAmount));
@@ -111,10 +116,23 @@ public class Monster
 	private void attackUpdate(Vector3f orientation, float distance)
 	{
 		Vector2f lineStart = new Vector2f(transform.getTranslation().getX(), transform.getTranslation().getZ());
-		Vector2f castDirection = new Vector2f(orientation.getX(), orientation.getZ());
+		Vector2f castDirection = new Vector2f(orientation.getX(), orientation.getZ()).rotate((rand.nextFloat() - 0.5f) * SHOT_ANGLE);
 		Vector2f lineEnd = lineStart.add(castDirection.mul(SHOOT_DISTANCE));
 		
 		Vector2f collisionVector = Game.getLevel().checkIntersections(lineStart, lineEnd);
+		
+		Vector2f playerIntersectVector = Game.getLevel().lineIntersectRect(
+				lineStart, lineEnd,
+				new Vector2f(Transform.getCamera().getPos().getX(), Transform.getCamera().getPos().getZ()), 
+				new Vector2f(Player.PLAYER_SIZE, Player.PLAYER_SIZE));
+				
+		if (playerIntersectVector != null
+			&& (collisionVector == null
+				|| playerIntersectVector.sub(lineStart).length() < collisionVector.sub(lineStart).length()))
+		{
+			System.out.println("We've just shot the player!");
+			state = STATE_CHASE;
+		}
 		
 		if (collisionVector == null)
 		{
@@ -123,8 +141,6 @@ public class Monster
 		else {
 			System.out.println("We've hit something!");
 		}
-		
-		state = STATE_CHASE;
 	}
 
 	private void dyingUpdate(Vector3f orientation, float distance)
@@ -147,7 +163,7 @@ public class Monster
 		double x = (double)directionToCamera.getX();
 		double z = (double)directionToCamera.getZ();
 		
-		double angle = -Math.toDegrees(Math.atan2(x, z));
+		double angle = Math.toDegrees(Math.atan2(x, -z));
 		
 		float angleToFaceTheCamera = (float)angle; 
 		
@@ -156,7 +172,7 @@ public class Monster
 	
 	public void update()
 	{
-		Vector3f directionToCamera = transform.getTranslation().sub(Transform.getCamera().getPos());
+		Vector3f directionToCamera = Transform.getCamera().getPos().sub(transform.getTranslation());
 		float distance = directionToCamera.length();
 		//TODO, what if distance is 0?
 		Vector3f orientation = directionToCamera.div(distance);

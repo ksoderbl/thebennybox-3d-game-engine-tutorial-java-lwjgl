@@ -19,7 +19,7 @@ public class Game
 	{
 		if (wolfenstein3Dclone)
 		{
-			Player player = new Player(new Vector3f(9,0.4375f,12));
+			Player player = new Player(new Vector3f(2, 0.4375f, 2));
 			level = new Level("level1.png", "WolfCollection.png", player);
 
 			Transform.setProjection(70.0f, Window.getWidth(), Window.getHeight(), 0.01f, 1000f);
