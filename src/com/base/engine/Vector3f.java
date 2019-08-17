@@ -121,5 +121,9 @@ public class Vector3f
 
 	public void setZ(float z) {
 		this.z = z;
-	}	
+	}
+	
+	public String toString() {
+		return "(" + Float.toString(x) + ", " + Float.toString(y) + ", " + Float.toString(z) + ")";
+	}
 }
